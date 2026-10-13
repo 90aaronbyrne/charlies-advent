@@ -1,0 +1,527 @@
+<title>Streamer Advent Calendar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caprasimo&family=Figtree:wght@400;600;700&family=Mountains+of+Christmas:wght@700&family=Noto+Color+Emoji&family=Pirata+One&display=swap">
+<style>
+  /* Layout: left-aligned masthead, month tabs, then a grid of hinged doors.
+     Each month swaps palette, display face and a drifting ornament layer.
+     Each month is a committed dark look, so there is no light variant. */
+  :root {
+    --bg: #150a20;
+    --bg-2: #2c1344;
+    --surface: #26133a;
+    --door: #4a2570;
+    --door-b: #3a1d5a;
+    --door-edge: #1b0d2b;
+    --accent: #ff8a1f;
+    --accent-2: #b58cff;
+    --text: #f7eeff;
+    --muted: #bba5d6;
+    --glow: rgba(255, 138, 31, 0.45);
+    --ink: #1a0c27;
+    --line: rgba(255, 255, 255, 0.16);
+    --font-display: "Pirata One", Georgia, serif;
+    --font-body: "Figtree", "Noto Color Emoji", system-ui, sans-serif;
+    color-scheme: dark;
+  }
+  html[data-month="nov"] {
+    --bg: #24130c;
+    --bg-2: #4d2616;
+    --surface: #38201a;
+    --door: #a2461f;
+    --door-b: #7d3419;
+    --door-edge: #1a0d08;
+    --accent: #f2b13c;
+    --accent-2: #a8bb62;
+    --text: #fff1dc;
+    --muted: #d9bfa8;
+    --glow: rgba(242, 177, 60, 0.45);
+    --ink: #2a1608;
+    --font-display: "Caprasimo", Georgia, serif;
+  }
+  html[data-month="dec"] {
+    --bg: #0a1730;
+    --bg-2: #183762;
+    --surface: #12284a;
+    --door: #b3263e;
+    --door-b: #1f6b4c;
+    --door-edge: #07101f;
+    --accent: #ffd36b;
+    --accent-2: #9fd8ff;
+    --text: #f2f8ff;
+    --muted: #a3bbd8;
+    --glow: rgba(255, 211, 107, 0.4);
+    --ink: #1b1204;
+    --font-display: "Mountains of Christmas", Georgia, serif;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background-color: var(--bg);
+    background-image: radial-gradient(120% 70% at 85% -10%, var(--bg-2), transparent 62%);
+    background-repeat: no-repeat;
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1.5;
+    min-height: 100vh;
+    transition: background-color 0.5s;
+  }
+  :focus-visible { outline: 3px solid var(--accent-2); outline-offset: 3px; }
+
+  .fx { position: fixed; inset: 0; overflow: hidden; pointer-events: none; z-index: 0; }
+  .fx span {
+    position: absolute;
+    font-size: var(--s, 1rem);
+    opacity: 0.45;
+    animation-duration: var(--d, 18s);
+    animation-delay: var(--delay, 0s);
+    animation-iteration-count: infinite;
+    animation-timing-function: linear;
+  }
+  .fx.fall span { top: -2rem; animation-name: fall; }
+  .fx.fly span { left: -3rem; animation-name: fly; }
+  @keyframes fall {
+    from { transform: translate3d(0, -2rem, 0) rotate(0deg); }
+    to { transform: translate3d(var(--dx, 2rem), 108vh, 0) rotate(300deg); }
+  }
+  @keyframes fly {
+    0% { transform: translate3d(0, 0, 0); }
+    25% { transform: translate3d(30vw, -1.6rem, 0); }
+    50% { transform: translate3d(60vw, 0.8rem, 0); }
+    75% { transform: translate3d(90vw, -1.2rem, 0); }
+    100% { transform: translate3d(118vw, 0, 0); }
+  }
+
+  .wrap { position: relative; z-index: 1; max-width: 62rem; margin: 0 auto; padding: 1.75rem 16px 3rem; }
+
+  .eyebrow { margin: 0 0 0.35rem; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--accent); }
+  h1 { margin: 0; font-family: var(--font-display); font-weight: 400; font-size: clamp(2.6rem, 10vw, 4.6rem); line-height: 1; text-wrap: balance; }
+  html[data-month="dec"] h1 { font-weight: 700; }
+  .lede { margin: 0.75rem 0 0; max-width: 34rem; color: var(--muted); font-size: 1.05rem; }
+
+  .tabs { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 1.5rem 0 0.75rem; }
+  .tab {
+    appearance: none; cursor: pointer; font: inherit; font-weight: 700; color: var(--text);
+    background: transparent; border: 1px solid var(--line); border-radius: 999px;
+    padding: 0.5rem 1.05rem; transition: background 0.2s, color 0.2s, border-color 0.2s;
+  }
+  .tab:hover { border-color: var(--accent); }
+  .tab[aria-selected="true"] { background: var(--accent); border-color: var(--accent); color: var(--ink); }
+  .status { margin: 0 0 1.25rem; color: var(--muted); font-size: 0.9rem; font-variant-numeric: tabular-nums; }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(5.2rem, 1fr)); gap: clamp(0.55rem, 2vw, 0.95rem); }
+  .grid.swap { animation: fadeup 0.4s ease-out; }
+  @keyframes fadeup { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+  .door {
+    position: relative; width: 100%; aspect-ratio: 3 / 4; padding: 0; border: 0; background: none;
+    font: inherit; color: inherit; cursor: pointer; perspective: 700px; -webkit-tap-highlight-color: transparent;
+  }
+  .frame {
+    position: absolute; inset: 0; border-radius: 0.6rem 0.6rem 0.2rem 0.2rem; overflow: hidden;
+    background: radial-gradient(circle at 50% 65%, var(--glow), transparent 72%), var(--door-edge);
+    box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.07);
+    display: grid; place-items: center;
+  }
+  .prize { font-size: clamp(1.9rem, 7.5vw, 2.7rem); line-height: 1; opacity: 0; transform: scale(0.6); transition: opacity 0.4s 0.25s, transform 0.5s 0.25s; }
+  .leaf {
+    position: absolute; inset: 3px; border-radius: 0.5rem 0.5rem 0.15rem 0.15rem;
+    background: linear-gradient(160deg, var(--door), var(--door-b));
+    transform-origin: left center; transition: transform 0.7s cubic-bezier(0.3, 0.7, 0.2, 1), filter 0.3s;
+    display: grid; place-items: center; box-shadow: 0 0.4rem 0.8rem rgba(0, 0, 0, 0.35);
+  }
+  .door:nth-child(even) .leaf { background: linear-gradient(160deg, var(--door-b), var(--door)); }
+  .leaf::before { content: ""; position: absolute; inset: 0.4rem; border: 1.5px solid rgba(255, 255, 255, 0.15); border-radius: 0.3rem; }
+  .leaf::after { content: ""; position: absolute; right: 0.5rem; top: 50%; width: 0.42rem; height: 0.42rem; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0.45rem var(--glow); }
+  .num { position: relative; z-index: 1; font-family: var(--font-display); font-size: clamp(1.6rem, 6.8vw, 2.2rem); line-height: 1; text-shadow: 0 2px 0 rgba(0, 0, 0, 0.35); }
+  html[data-month="dec"] .num { font-weight: 700; }
+  .orn { position: absolute; left: 0.55rem; top: 0.5rem; font-size: 0.72rem; opacity: 0.85; z-index: 1; }
+  .tag { position: absolute; left: 0; right: 0; bottom: 0.55rem; text-align: center; font-size: 0.55rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; z-index: 1; color: var(--accent); }
+  .tag.lock { font-size: 0.8rem; letter-spacing: 0; color: var(--text); }
+
+  .door:not(.is-locked):not(.is-open):hover .leaf { transform: rotateY(-16deg); }
+  .door.is-open .leaf { transform: rotateY(-78deg); }
+  .door.is-open .prize { opacity: 1; transform: none; }
+  .door.is-locked .leaf { filter: saturate(0.4) brightness(0.72); }
+  .door.is-locked { cursor: not-allowed; }
+  .door.is-today:not(.is-open) .frame { animation: pulse 2.2s ease-in-out infinite; }
+  @keyframes pulse {
+    0%, 100% { box-shadow: inset 0 0 0 2px var(--accent), 0 0 0.5rem var(--glow); }
+    50% { box-shadow: inset 0 0 0 2px var(--accent), 0 0 1.4rem var(--glow); }
+  }
+  .door.shake { animation: shake 0.4s; }
+  @keyframes shake { 20%, 60% { transform: translateX(-5px); } 40%, 80% { transform: translateX(5px); } }
+
+  .foot { display: flex; flex-wrap: wrap; gap: 0.75rem 2rem; align-items: center; justify-content: space-between; margin-top: 2.25rem; padding-top: 1rem; border-top: 1px solid var(--line); font-size: 0.85rem; color: var(--muted); }
+  .foot label { display: inline-flex; align-items: center; gap: 0.5rem; cursor: pointer; color: var(--text); }
+  .foot input { width: 1.1rem; height: 1.1rem; accent-color: var(--accent); }
+  .foot p { margin: 0; min-width: 0; }
+
+  .toast {
+    position: fixed; left: 50%; bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px)); z-index: 5;
+    max-width: calc(100vw - 32px); transform: translate(-50%, 1rem); opacity: 0; pointer-events: none;
+    background: var(--surface); color: var(--text); border: 1px solid var(--accent); border-radius: 0.7rem;
+    padding: 0.65rem 1rem; font-weight: 600; text-align: center; transition: opacity 0.25s, transform 0.25s;
+  }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+  dialog { border: 0; padding: 0; background: transparent; color: var(--text); width: min(26rem, calc(100vw - 2rem)); max-height: calc(100vh - 2rem); overflow: visible; }
+  dialog::backdrop { background: rgba(4, 2, 10, 0.75); backdrop-filter: blur(3px); }
+  dialog[open] { animation: pop 0.35s cubic-bezier(0.2, 0.9, 0.3, 1.2); }
+  @keyframes pop { from { opacity: 0; transform: scale(0.88) translateY(12px); } to { opacity: 1; transform: none; } }
+  .pz { position: relative; background: var(--surface); border: 1px solid var(--line); border-radius: 1.25rem; padding: 1.75rem 1.5rem 1.5rem; text-align: center; box-shadow: 0 1.5rem 3rem rgba(0, 0, 0, 0.5); }
+  .pz-x { position: absolute; top: 0.6rem; right: 0.6rem; width: 2.2rem; height: 2.2rem; border-radius: 50%; border: 1px solid var(--line); background: transparent; color: var(--text); font-size: 1.3rem; line-height: 1; cursor: pointer; }
+  .pz-x:hover { border-color: var(--accent); }
+  .pz-img { width: 9rem; height: 9rem; margin: 0 auto 1.1rem; border-radius: 50%; display: grid; place-items: center; font-size: 5rem; line-height: 1; border: 2px solid var(--accent); background: radial-gradient(circle at 50% 40%, var(--glow), transparent 72%), var(--bg); }
+  .pz-eyebrow { margin: 0 0 0.3rem; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--accent); }
+  .pz h2 { margin: 0 0 1rem; font-family: var(--font-display); font-weight: 400; font-size: clamp(1.8rem, 7vw, 2.3rem); line-height: 1.05; text-wrap: balance; }
+  html[data-month="dec"] .pz h2 { font-weight: 700; }
+  .pz-text { margin: 0 0 0.75rem; padding: 0.95rem 1rem; text-align: left; border: 1.5px dashed var(--accent-2); border-radius: 0.8rem; background: rgba(0, 0, 0, 0.22); font-size: 1.02rem; }
+  .pz-claim { margin: 0 0 1.1rem; color: var(--muted); font-size: 0.82rem; }
+  .btn { appearance: none; cursor: pointer; font: inherit; font-weight: 700; border: 0; border-radius: 999px; padding: 0.6rem 1.6rem; background: var(--accent); color: var(--ink); }
+  .btn:hover { filter: brightness(1.08); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .fx { display: none; }
+    .leaf, .prize, .toast, .tab { transition: none; }
+    .door.is-today:not(.is-open) .frame, .door.shake, dialog[open], .grid.swap { animation: none; }
+  }
+</style>
+
+<div class="fx" id="fx" aria-hidden="true"></div>
+
+<main class="wrap">
+  <header>
+    <p class="eyebrow">1 Oct to 31 Dec</p>
+    <h1>Advent Calendar</h1>
+    <p class="lede" id="lede"></p>
+  </header>
+
+  <div class="tabs" role="tablist" aria-label="Month" id="tabs"></div>
+  <p class="status" id="status" aria-live="polite"></p>
+
+  <section class="grid" id="grid" aria-label="Calendar doors"></section>
+
+  <footer class="foot">
+    <label for="preview"><input type="checkbox" id="preview"> Streamer preview: unlock every door</label>
+    <p>Prize art: Noto Color Emoji by Google, open-source. Typefaces: Google Fonts, open-source.</p>
+  </footer>
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<dialog id="prize" aria-labelledby="pz-title">
+  <div class="pz">
+    <button class="pz-x" type="button" id="pz-close" aria-label="Close">&times;</button>
+    <div class="pz-img" aria-hidden="true"><span id="pz-emoji"></span></div>
+    <p class="pz-eyebrow" id="pz-eyebrow"></p>
+    <h2 id="pz-title"></h2>
+    <p class="pz-text" id="pz-text"></p>
+    <p class="pz-claim" id="pz-claim"></p>
+    <button class="btn" id="pz-done" type="button">Close</button>
+  </div>
+</dialog>
+
+<script>
+(function () {
+  var YEAR = 2026;
+  var CLAIM_NOTE = "Screenshot this prize and show it in chat to claim it.";
+
+  /* ===== EDIT PRIZES HERE =====
+     Each door is [image, award title, text in the text box].
+     Doors are listed in order, day 1 first. The prizes below are placeholders. */
+  var MONTHS = [
+    {
+      key: "oct", name: "October", idx: 9, days: 31, orn: "🕸️", mode: "fly",
+      fx: ["🦇", "🦇", "👻"],
+      lede: "Spooky season. One door every day until Halloween.",
+      doors: [
+        ["🎃", "Pumpkin Patch Shoutout", "Get a personal shoutout live on stream today."],
+        ["👻", "Ghost Pass", "Jump to the front of the queue for the next viewer game."],
+        ["🦇", "Bat Signal Song", "Pick a track for the stream playlist tonight."],
+        ["🕷️", "Creepy Game Vote", "Choose which spooky game gets played next."],
+        ["🕸️", "Web of Points", "Catch 500 bonus channel points."],
+        ["💀", "Skull Chat Badge", "Wear an exclusive skull badge in chat for the rest of the month."],
+        ["🧙", "Witch's Challenge", "Set a challenge for the streamer to attempt on stream."],
+        ["🧛", "Vampire Sub Gift", "One lucky chatter wins a gifted sub."],
+        ["🧟", "Survival Loadout", "Pick the loadout for a survival run."],
+        ["🍬", "Sweet Emote Vote", "Choose the emote that gets spammed today."],
+        ["🍭", "Lollipop Hype", "Double points during the next hype train."],
+        ["🌕", "Full Moon Raid", "Choose who gets raided at the end of stream."],
+        ["🪦", "Silly Stream Rule", "Invent a rule that holds for the whole stream."],
+        ["🕯️", "Candlelit Q&A", "Ask the streamer anything and get an answer on stream."],
+        ["🔮", "Crystal Ball", "Make a prediction and hear it read out live."],
+        ["🐈‍⬛", "Black Cat Naming", "Name the stream's mascot for the day."],
+        ["🍫", "Chocolate Bonus", "Win 750 channel points."],
+        ["🦉", "Night Owl Call-Out", "Late-night chatters get a special shoutout."],
+        ["🧪", "Potion Mix-Up", "Chat votes on a random handicap for one round."],
+        ["🪄", "Wand Wish", "Suggest a new chat command. The best one gets added."],
+        ["🎭", "Costume Dare", "Give the streamer a costume to wear on stream."],
+        ["🍎", "Candy Apple Draw", "Enter a draw for a small prize."],
+        ["🏚️", "Haunted House Night", "Join the streamer in a viewer game night."],
+        ["🌙", "Midnight Playlist", "Add one song to the spooky playlist."],
+        ["⚰️", "Clip Resurrection", "Pick an old clip to replay on stream."],
+        ["🦴", "Bone-us Points", "Unearth 1,000 channel points."],
+        ["🧹", "Broomstick Boost", "Earn double points for the first hour of stream."],
+        ["👁️", "Eye Spy Challenge", "Spot the hidden detail in the stream scene to win a prize."],
+        ["🌫️", "Fog of War Pick", "Choose the map or mode for the next match."],
+        ["☠️", "Hardcore Mode Vote", "Decide whether the next run is hardcore."],
+        ["🎃", "Halloween Grand Prize", "A special prize drawn from everyone who opened a door in October."]
+      ]
+    },
+    {
+      key: "nov", name: "November", idx: 10, days: 30, orn: "🍂", mode: "fall",
+      fx: ["🍂", "🍁", "🍂", "🌰"],
+      lede: "Slow evenings, warm drinks and one door a day.",
+      doors: [
+        ["🍂", "Falling Leaves Bonus", "Catch 500 channel points."],
+        ["🍁", "Cosy Game Pick", "Choose the game for tonight's chill stream."],
+        ["🍄", "Mushroom Emote Idea", "Suggest an emote. The best one gets considered."],
+        ["🌰", "Chestnut Chat Badge", "Wear an exclusive autumn badge in chat."],
+        ["🥧", "Pie Poll", "Vote pumpkin or apple. The winning side gets a shoutout."],
+        ["🍎", "Orchard Shoutout", "Get a personal shoutout live on stream."],
+        ["🍯", "Honey Sub Gift", "One lucky chatter wins a gifted sub."],
+        ["🧣", "Scarf Weather Song", "Request a song for the stream playlist."],
+        ["🧦", "Cosy Socks Raid", "Choose who gets raided at the end of stream."],
+        ["☕", "Coffee Break Q&A", "Ask the streamer anything during the break."],
+        ["🍵", "Tea Time Story", "The streamer shares a story you pick."],
+        ["🕯️", "Warm Glow Points", "Light up 750 bonus channel points."],
+        ["🌽", "Harvest Haul", "Double points for the first hour of stream."],
+        ["🥕", "Veggie Dare", "Set a harmless food challenge for the streamer."],
+        ["🎑", "Moon Viewing Night", "Pick the music for a relaxed late-night stream."],
+        ["🍞", "Fresh Bake Draw", "Enter a draw for a small prize."],
+        ["🧶", "Knit Along Vote", "Choose the chill activity for the next stream."],
+        ["📚", "Book Club Pick", "Recommend a book or game for a future stream."],
+        ["🔥", "Fireside Chat Hour", "An hour of open conversation. You choose the topic."],
+        ["🏡", "Cabin Game Night", "Join the streamer in a viewer game night."],
+        ["🦊", "Fox Naming Rights", "Name the stream's mascot for the day."],
+        ["🦔", "Hedgehog Hype", "Trigger a hype moment in chat."],
+        ["🐿️", "Squirrel Stash", "Stash away 1,000 channel points."],
+        ["🌾", "Wheat Field Wager", "Make a prediction for tonight's stream."],
+        ["🍇", "Grape Giveaway", "Enter a draw for a small prize."],
+        ["🦃", "Feast Giveaway", "Enter the feast draw for a bigger prize."],
+        ["🍐", "Pear Pick", "Choose the next mini-game for chat."],
+        ["🍲", "Stew Special", "Pick the soundtrack for a long stream."],
+        ["🧤", "Mitten Match", "Join a viewer match against the streamer."],
+        ["🪵", "Last Log on the Fire", "A special prize drawn from everyone who opened a door in November."]
+      ]
+    },
+    {
+      key: "dec", name: "December", idx: 11, days: 31, orn: "❄️", mode: "fall",
+      fx: ["❄️", "❄️", "✨", "❄️"],
+      lede: "Snow, lights and one door a day until the new year.",
+      doors: [
+        ["❄️", "First Snowflake", "Catch 500 channel points."],
+        ["⛄", "Snowman Shoutout", "Get a personal shoutout live on stream."],
+        ["🎄", "Tree Trimming Vote", "Choose how the stream overlay gets decorated."],
+        ["🎁", "Mystery Gift Box", "A small surprise prize for one chatter."],
+        ["🔔", "Jingle Bell Points", "Ring in 750 bonus channel points."],
+        ["🦌", "Reindeer Raid Pick", "Choose who gets raided at the end of stream."],
+        ["🧝", "Elf Song Request", "Pick a track for the festive playlist."],
+        ["🌟", "Star Topper Badge", "Wear an exclusive festive badge in chat."],
+        ["🧦", "Stocking Stuffer Sub", "One lucky chatter wins a gifted sub."],
+        ["🍪", "Cookie Poll", "Vote on the cookie of the day. The winning flavour gets a shoutout."],
+        ["🥛", "Milk and Cookies Q&A", "Ask the streamer anything on stream."],
+        ["🍬", "Candy Cane Double Points", "Earn double points for the first hour of stream."],
+        ["🛷", "Sleigh Ride Speedrun", "Vote on the speedrun challenge for tonight."],
+        ["🧤", "Snow Day Game Night", "Join the streamer in a viewer game night."],
+        ["🧣", "Cosy Scarf Hype", "Trigger a hype moment in chat."],
+        ["⛸️", "Ice Skate Challenge", "Set a balance challenge for the streamer."],
+        ["🏂", "Snowboard Pick", "Choose the next fast-paced game."],
+        ["🎿", "Ski Slope Predictions", "Predict tonight's result for bonus points."],
+        ["🍫", "Hot Cocoa Hour", "Pick the music for a relaxed hour."],
+        ["☃️", "Build-a-Snowman Poll", "Vote on the snowman design for the overlay."],
+        ["🕯️", "Solstice Candle", "Enter the longest-night raffle."],
+        ["🎶", "Carol Request", "Request a festive song."],
+        ["🎮", "Gamer's Wishlist", "Suggest a game for a future stream."],
+        ["✨", "Christmas Eve Magic", "A special surprise drawn from everyone who opened a door."],
+        ["🎅", "Christmas Day Grand Prize", "The big prize, drawn from every door opened this month."],
+        ["🏆", "Boxing Day Bonus", "Win 1,000 channel points."],
+        ["🎧", "Playlist Pick", "Choose the soundtrack for tonight."],
+        ["🎙️", "Mic Check Q&A", "Ask the streamer anything."],
+        ["👑", "Mod for a Day", "Become an honorary mod for one stream."],
+        ["🥂", "Toast to the Year", "Share your favourite stream moment of the year."],
+        ["🎆", "New Year's Eve Finale", "The final prize, drawn from everyone who opened a door in " + YEAR + "."]
+      ]
+    }
+  ];
+  /* ===== END OF PRIZES ===== */
+
+  var KEY = "advent-opened-" + YEAR;
+  var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var $ = function (id) { return document.getElementById(id); };
+  var grid = $("grid"), tabs = $("tabs"), fx = $("fx"), toast = $("toast"), dlg = $("prize");
+  var preview = false, current = 0, lastBtn = null, toastTimer = null;
+
+  function loadOpened() {
+    try { return new Set(JSON.parse(localStorage.getItem(KEY) || "[]")); } catch (e) { return new Set(); }
+  }
+  function saveOpened() {
+    try { localStorage.setItem(KEY, JSON.stringify(Array.from(opened))); } catch (e) {}
+  }
+  var opened = loadOpened();
+
+  function startOfToday() {
+    var n = new Date();
+    return new Date(n.getFullYear(), n.getMonth(), n.getDate());
+  }
+  function doorDate(m, d) { return new Date(YEAR, m.idx, d); }
+  function isAvailable(m, d) { return preview || doorDate(m, d).getTime() <= startOfToday().getTime(); }
+  function isToday(m, d) { return doorDate(m, d).getTime() === startOfToday().getTime(); }
+  function keyOf(m, d) { return m.idx + "-" + d; }
+
+  function applyState(btn, m, d) {
+    var avail = isAvailable(m, d), isOpen = avail && opened.has(keyOf(m, d)), today = isToday(m, d);
+    btn.classList.toggle("is-locked", !avail);
+    btn.classList.toggle("is-open", isOpen);
+    btn.classList.toggle("is-today", today && avail);
+    btn.setAttribute("aria-disabled", avail ? "false" : "true");
+    var tag = btn.querySelector(".tag");
+    tag.className = "tag" + (avail ? "" : " lock");
+    tag.textContent = !avail ? "🔒" : (today ? "Today" : "");
+    var state = !avail ? "locked" : (isOpen ? "opened, view prize" : (today ? "available today" : "available"));
+    btn.setAttribute("aria-label", m.name + " door " + d + ", " + state);
+  }
+
+  function refreshStatus() {
+    var m = MONTHS[current], ready = 0, seen = 0;
+    for (var d = 1; d <= m.days; d++) {
+      if (isAvailable(m, d)) { ready++; if (opened.has(keyOf(m, d))) seen++; }
+    }
+    $("status").textContent = ready + " of " + m.days + " doors ready · " + seen + " opened";
+  }
+
+  function buildGrid() {
+    var m = MONTHS[current];
+    grid.innerHTML = "";
+    for (var d = 1; d <= m.days; d++) {
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "door";
+      b.dataset.day = String(d);
+      b.innerHTML =
+        '<span class="frame"><span class="prize" aria-hidden="true"></span></span>' +
+        '<span class="leaf"><span class="orn" aria-hidden="true"></span><span class="num"></span><span class="tag"></span></span>';
+      b.querySelector(".prize").textContent = m.doors[d - 1][0];
+      b.querySelector(".orn").textContent = m.orn;
+      b.querySelector(".num").textContent = String(d);
+      applyState(b, m, d);
+      grid.appendChild(b);
+    }
+    grid.classList.remove("swap");
+    void grid.offsetWidth;
+    grid.classList.add("swap");
+    refreshStatus();
+  }
+
+  function buildFx() {
+    var m = MONTHS[current];
+    fx.innerHTML = "";
+    fx.className = "fx " + m.mode;
+    for (var i = 0; i < 14; i++) {
+      var s = document.createElement("span");
+      s.textContent = m.fx[i % m.fx.length];
+      s.style.setProperty("--s", (0.9 + (i % 4) * 0.35) + "rem");
+      s.style.setProperty("--d", (m.mode === "fly" ? 22 + (i % 5) * 4 : 14 + (i % 5) * 3) + "s");
+      s.style.setProperty("--delay", "-" + (i * 2.3) + "s");
+      if (m.mode === "fly") {
+        s.style.top = ((i * 11 + 6) % 68) + "vh";
+      } else {
+        s.style.left = ((i * 7.3 + (i % 3) * 4) % 96) + "vw";
+        s.style.setProperty("--dx", (i % 2 ? 3 : -3) + "rem");
+      }
+      fx.appendChild(s);
+    }
+  }
+
+  function setMonth(i) {
+    current = i;
+    var m = MONTHS[i];
+    document.documentElement.dataset.month = m.key;
+    $("lede").textContent = m.lede;
+    Array.prototype.forEach.call(tabs.children, function (t, n) {
+      t.setAttribute("aria-selected", n === i ? "true" : "false");
+      t.tabIndex = n === i ? 0 : -1;
+    });
+    buildGrid();
+    buildFx();
+  }
+
+  function showToast(msg) {
+    toast.textContent = msg;
+    toast.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toast.classList.remove("show"); }, 2600);
+  }
+
+  function showPrize(m, d) {
+    var p = m.doors[d - 1];
+    $("pz-emoji").textContent = p[0];
+    $("pz-eyebrow").textContent = m.name + " · Door " + d;
+    $("pz-title").textContent = p[1];
+    $("pz-text").textContent = p[2];
+    $("pz-claim").textContent = CLAIM_NOTE;
+    try { dlg.showModal(); } catch (e) { dlg.setAttribute("open", ""); }
+  }
+
+  grid.addEventListener("click", function (e) {
+    var btn = e.target.closest ? e.target.closest(".door") : null;
+    if (!btn) return;
+    var m = MONTHS[current], d = parseInt(btn.dataset.day, 10);
+    lastBtn = btn;
+    if (!isAvailable(m, d)) {
+      btn.classList.remove("shake");
+      void btn.offsetWidth;
+      btn.classList.add("shake");
+      var when = doorDate(m, d).toLocaleDateString(undefined, { weekday: "long", day: "numeric", month: "long" });
+      showToast("Door " + d + " opens on " + when);
+      return;
+    }
+    var firstTime = !opened.has(keyOf(m, d));
+    if (firstTime) {
+      opened.add(keyOf(m, d));
+      saveOpened();
+      applyState(btn, m, d);
+      refreshStatus();
+    }
+    setTimeout(function () { showPrize(m, d); }, firstTime && !reduce ? 550 : 0);
+  });
+
+  dlg.addEventListener("click", function (e) { if (e.target === dlg) dlg.close(); });
+  $("pz-close").addEventListener("click", function () { dlg.close(); });
+  $("pz-done").addEventListener("click", function () { dlg.close(); });
+  dlg.addEventListener("close", function () { if (lastBtn) { try { lastBtn.focus(); } catch (e) {} } });
+
+  $("preview").addEventListener("change", function (e) {
+    preview = e.target.checked;
+    var m = MONTHS[current];
+    Array.prototype.forEach.call(grid.children, function (b) { applyState(b, m, parseInt(b.dataset.day, 10)); });
+    refreshStatus();
+    showToast(preview ? "Preview on: every door is unlocked" : "Preview off: doors follow the calendar");
+  });
+
+  MONTHS.forEach(function (m, i) {
+    var t = document.createElement("button");
+    t.type = "button";
+    t.className = "tab";
+    t.setAttribute("role", "tab");
+    t.textContent = m.name;
+    t.addEventListener("click", function () { setMonth(i); });
+    t.addEventListener("keydown", function (e) {
+      var n = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0;
+      if (!n) return;
+      var j = (i + n + MONTHS.length) % MONTHS.length;
+      setMonth(j);
+      tabs.children[j].focus();
+    });
+    tabs.appendChild(t);
+  });
+
+  var now = new Date(), start = 0;
+  if (now.getFullYear() > YEAR) start = 2;
+  else if (now.getFullYear() === YEAR && now.getMonth() >= 9) start = Math.min(2, now.getMonth() - 9);
+  setMonth(start);
+})();
+</script>
