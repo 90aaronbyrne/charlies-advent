@@ -158,6 +158,9 @@
   .foot label { display: inline-flex; align-items: center; gap: 0.5rem; cursor: pointer; color: var(--text); }
   .foot input { width: 1.1rem; height: 1.1rem; accent-color: var(--accent); }
   .foot p { margin: 0; min-width: 0; }
+  .reset { appearance: none; cursor: pointer; font: inherit; font-weight: 700; font-size: 0.85rem; color: var(--text); background: transparent; border: 1px solid var(--line); border-radius: 999px; padding: 0.45rem 1rem; transition: background 0.2s, color 0.2s, border-color 0.2s; }
+  .reset:hover { border-color: var(--accent); }
+  .reset.confirm { background: var(--accent); border-color: var(--accent); color: var(--ink); }
 
   .toast {
     position: fixed; left: 50%; bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px)); z-index: 5;
@@ -204,6 +207,7 @@
   <section class="grid" id="grid" aria-label="Calendar doors"></section>
 
   <footer class="foot">
+    <button class="reset" type="button" id="reset">Reset all doors</button>
     <p>Prize art: Noto Color Emoji by Google, open-source. Typefaces: Google Fonts, open-source.</p>
   </footer>
 </main>
@@ -478,6 +482,26 @@
   $("pz-close").addEventListener("click", function () { dlg.close(); });
   $("pz-done").addEventListener("click", function () { dlg.close(); });
   dlg.addEventListener("close", function () { if (lastBtn) { try { lastBtn.focus(); } catch (e) {} } });
+
+  var resetBtn = $("reset"), resetTimer = null;
+  function disarmReset() { resetBtn.classList.remove("confirm"); resetBtn.textContent = "Reset all doors"; }
+  resetBtn.addEventListener("click", function () {
+    if (!resetBtn.classList.contains("confirm")) {
+      resetBtn.classList.add("confirm");
+      resetBtn.textContent = "Tap again to close every door";
+      clearTimeout(resetTimer);
+      resetTimer = setTimeout(disarmReset, 4000);
+      return;
+    }
+    clearTimeout(resetTimer);
+    opened = new Set();
+    try { localStorage.removeItem(KEY); } catch (e) {}
+    disarmReset();
+    var m = MONTHS[current];
+    Array.prototype.forEach.call(grid.children, function (b) { applyState(b, m, parseInt(b.dataset.day, 10)); });
+    refreshStatus();
+    showToast("All doors are closed again");
+  });
 
   MONTHS.forEach(function (m, i) {
     var t = document.createElement("button");
