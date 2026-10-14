@@ -178,8 +178,7 @@
   .pz-eyebrow { margin: 0 0 0.3rem; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--accent); }
   .pz h2 { margin: 0 0 1rem; font-family: var(--font-display); font-weight: 400; font-size: clamp(1.8rem, 7vw, 2.3rem); line-height: 1.05; text-wrap: balance; }
   html[data-month="dec"] .pz h2 { font-weight: 700; }
-  .pz-text { margin: 0 0 0.75rem; padding: 0.95rem 1rem; text-align: left; border: 1.5px dashed var(--accent-2); border-radius: 0.8rem; background: rgba(0, 0, 0, 0.22); font-size: 1.02rem; }
-  .pz-claim { margin: 0 0 1.1rem; color: var(--muted); font-size: 0.82rem; }
+  .pz-text { margin: 0 0 1.25rem; padding: 0.95rem 1rem; text-align: left; border: 1.5px dashed var(--accent-2); border-radius: 0.8rem; background: rgba(0, 0, 0, 0.22); font-size: 1.02rem; }
   .btn { appearance: none; cursor: pointer; font: inherit; font-weight: 700; border: 0; border-radius: 999px; padding: 0.6rem 1.6rem; background: var(--accent); color: var(--ink); }
   .btn:hover { filter: brightness(1.08); }
 
@@ -219,7 +218,6 @@
     <p class="pz-eyebrow" id="pz-eyebrow"></p>
     <h2 id="pz-title"></h2>
     <p class="pz-text" id="pz-text"></p>
-    <p class="pz-claim" id="pz-claim"></p>
     <button class="btn" id="pz-done" type="button">Close</button>
   </div>
 </dialog>
@@ -227,7 +225,6 @@
 <script>
 (function () {
   var YEAR = 2026;
-  var CLAIM_NOTE = "Screenshot this prize and show it in chat to claim it.";
 
   /* ===== EDIT PRIZES HERE =====
      Each door is [image, award title, text in the text box].
@@ -462,7 +459,6 @@
     $("pz-eyebrow").textContent = m.name + " · Door " + d;
     $("pz-title").textContent = p[1];
     $("pz-text").textContent = p[2];
-    $("pz-claim").textContent = CLAIM_NOTE;
     try { dlg.showModal(); } catch (e) { dlg.setAttribute("open", ""); }
   }
 
